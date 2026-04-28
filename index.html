@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite League Pro | Live</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <img id="league-logo-display" src="" style="display:none; width: 60px; height: 60px; border-radius: 50%;">
+            <h1 id="league-name-display">Kibet Football Hub</h1>
+        </div>
+        <nav>
+            <button onclick="showSection('dashboard')">Standings</button>
+            <button onclick="showSection('stats')">Leaderboards</button>
+            <button onclick="showSection('fixtures')">Match Weeks</button>
+            <button onclick="showSection('admin')">Admin</button>
+        </nav>
+    </header>
+
+    <main>
+        <section id="dashboard" class="content-section">
+            <div class="card" id="standings-card">
+                <div class="card-header">
+                    <h2>League Standings</h2>
+                    <button class="download-btn" onclick="downloadSection('standings-card')">Download PNG</button>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr><th>#</th><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr>
+                        </thead>
+                        <tbody id="table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section id="stats" class="content-section" style="display:none;">
+            <div class="admin-grid">
+                <div class="card" id="attack-card">
+                    <div class="card-header"><h3>Best Attack (GF)</h3><button class="download-btn" onclick="downloadSection('attack-card')">PNG</button></div>
+                    <table id="attack-table"><thead><tr><th>Rank</th><th>Team</th><th>Goals</th></tr></thead><tbody id="attack-body"></tbody></table>
+                </div>
+                <div class="card" id="defence-card">
+                    <div class="card-header"><h3>Best Defence (GA)</h3><button class="download-btn" onclick="downloadSection('defence-card')">PNG</button></div>
+                    <table id="defence-table"><thead><tr><th>Rank</th><th>Team</th><th>GA</th></tr></thead><tbody id="defence-body"></tbody></table>
+                </div>
+            </div>
+        </section>
+
+        <section id="fixtures" class="content-section" style="display:none;">
+            <div class="card" id="fixtures-card">
+                <div class="card-header">
+                    <div><select id="week-selector" onchange="renderFixtures()"></select></div>
+                    <button class="download-btn" onclick="downloadSection('fixtures-card')">Download PNG</button>
+                </div>
+                <div id="match-list"></div>
+            </div>
+        </section>
+
+        <section id="admin" class="content-section" style="display:none;">
+            <div class="card" id="login-container">
+                <h2>Admin Login</h2>
+                <input type="password" id="admin-pass" placeholder="Password (admin123)">
+                <button class="action-btn" onclick="checkLogin()">Login</button>
+            </div>
+            <div id="admin-controls" style="display:none;">
+                <div class="admin-grid">
+                    <div class="admin-card">
+                        <h3>Branding</h3>
+                        <input type="text" id="new-league-name" placeholder="League Name">
+                        <input type="file" id="league-logo-upload" accept="image/*">
+                        <button class="action-btn" onclick="updateLeagueSettings()">Save</button>
+                    </div>
+                    <div class="admin-card">
+                        <h3>Teams</h3>
+                        <div id="admin-team-list" class="scroll-box"></div>
+                        <input type="text" id="team-name-input" placeholder="Team Name">
+                        <input type="file" id="team-logo-upload" accept="image/*">
+                        <button class="action-btn" onclick="addTeam()">Add Team</button>
+                    </div>
+                    <div class="admin-card full-width"><h3>Enter Scores</h3><div id="admin-matches-list"></div></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
