@@ -3,17 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kibet Football Hub | Live</title>
+    <title>Elite Football Hub | Live</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <header>
-        <div class="logo-container">
-            <img id="league-logo-display" src="" style="display:none; width: 50px; height: 50px; border-radius: 50%;">
-            <h1 id="league-name-display">Kibet Football Hub</h1>
-        </div>
+        <h1 id="league-name-display">Elite Football Hub</h1>
         <nav>
             <button onclick="showSection('dashboard')">Standings</button>
             <button onclick="showSection('fixtures')">Fixtures</button>
@@ -25,7 +22,7 @@
         <section id="dashboard" class="content-section">
             <div class="card" id="standings-card">
                 <div class="card-header">
-                    <h2>League Standings</h2>
+                    <h2>League Table</h2>
                     <button class="download-btn" onclick="downloadSection('standings-card')">PNG</button>
                 </div>
                 <table>
@@ -40,7 +37,7 @@
         <section id="fixtures" class="content-section" style="display:none;">
             <div class="card" id="fixtures-card">
                 <div class="card-header">
-                    <select id="week-selector" onchange="renderFixtures()"></select>
+                    <select id="week-selector" onchange="renderFixturesDisplay()"></select>
                 </div>
                 <div id="match-list"></div>
             </div>
@@ -54,13 +51,12 @@
             <div id="admin-controls" style="display:none;">
                 <div class="admin-grid">
                     <div class="admin-card">
-                        <h3>Add Team</h3>
+                        <h3>Add New Team</h3>
                         <input type="text" id="team-name-input" placeholder="Team Name">
-                        <input type="file" id="team-logo-upload" accept="image/*">
-                        <button class="action-btn" onclick="addTeam()">Add</button>
+                        <button class="action-btn" onclick="addTeam()">Add Team</button>
                     </div>
                     <div class="admin-card">
-                        <h3>Teams List</h3>
+                        <h3>Manage Teams</h3>
                         <div id="admin-team-list" class="scroll-box"></div>
                     </div>
                     <div class="admin-card full-width">
