@@ -144,4 +144,21 @@ function downloadSection(id) {
     });
 }
 
+// DELETE TEAM FUNCTION
+function deleteTeam(id) {
+    if (confirm("Are you sure? This will reset all fixtures!")) {
+        // 1. Remove the team from the state
+        state.teams = state.teams.filter(t => t.id !== id);
+        
+        // 2. Regenerate the fixtures since the team count changed
+        generateWeeks();
+        
+        // 3. Save the new state to Supabase
+        save();
+        
+        // 4. Refresh to update the UI
+        location.reload();
+    }
+}
+
 loadData();
