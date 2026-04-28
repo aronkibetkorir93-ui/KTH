@@ -2,20 +2,17 @@ const SUPABASE_URL = 'https://thfrwuixfeilvztifcfg.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRoZnJ3dWl4ZmVpbHZ6dGlmY2ZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczOTI0MTAsImV4cCI6MjA5Mjk2ODQxMH0.1jHn3xM24uJ0PDm1HIjBK0TBzqutBM-7Zvbnc2G3leQ';
 const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-let state = { leagueName: "Kibet Football Hub", leagueLogo: "", teams: [], matches: [] };
+let state = { leagueName: "Elite Football Hub", leagueLogo: "", teams: [], matches: [] };
 
 async function loadData() {
     const { data } = await _supabase.from('league_data').select('content').eq('id', 1).single();
     if (data) state = data.content;
     
-    // Check if user was logged in before refresh
     if (sessionStorage.getItem('isAdmin') === 'true') {
         document.getElementById('login-container').style.display = 'none';
         document.getElementById('admin-controls').style.display = 'block';
     }
-
     renderAll();
-    populateWeekSelector();
 }
 
 async function save() {
@@ -24,25 +21,25 @@ async function save() {
 }
 
 async function addTeam() {
-    const name = document.getElementById('team-name-input').value;
-    const file = document.getElementById('team-logo-upload').files[0];
-    if (!name || !file) return alert("Missing Info");
+    const nameInput = document.getElementById('team-name-input');
+    const fileInput = document.getElementById('team-logo-upload');
+    if (!nameInput.value || !fileInput.files[0]) return alert("Enter name and logo!");
+
     const reader = new FileReader();
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(fileInput.files[0]);
     reader.onload = async () => {
-        state.teams.push({ id: Date.now(), name, logo: reader.result });
+        state.teams.push({ id: Date.now(), name: nameInput.value, logo: reader.result });
         generateWeeks();
         await save();
-        location.reload();
+        nameInput.value = "";
     };
 }
 
 async function deleteTeam(id) {
-    if (confirm("Delete team and reset fixtures?")) {
+    if (confirm("Delete team?")) {
         state.teams = state.teams.filter(t => t.id !== id);
         generateWeeks();
-        await save(); // Waits for upload
-        location.reload();
+        await save();
     }
 }
 
@@ -69,11 +66,13 @@ async function updateScore(idx, side, val) {
 function renderAll() {
     document.getElementById('league-name-display').innerText = state.leagueName;
     
+    // THE CALCULATION ENGINE
     const stats = state.teams.map(team => {
         let s = { ...team, p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, pts: 0 };
         state.matches.forEach(m => {
             if (m.hS === null || m.aS === null) return;
             const hS = parseInt(m.hS), aS = parseInt(m.aS);
+            
             if (m.homeId === team.id) {
                 s.p++; s.gf += hS; s.ga += aS;
                 if (hS > aS) s.pts += 3; else if (hS === aS) s.pts += 1;
@@ -85,32 +84,38 @@ function renderAll() {
         return s;
     }).sort((a,b) => b.pts - a.pts || (b.gf - b.ga) - (a.gf - a.ga));
 
+    // RENDER TABLE
     document.getElementById('table-body').innerHTML = stats.map((t, i) => `
-        <tr><td>${i+1}</td><td><img src="${t.logo}" class="team-logo-small">${t.name}</td>
-        <td>${t.p}</td><td>${t.pts/3|0}</td><td>${t.gf}</td><td>${t.ga}</td><td>${t.gf-t.ga}</td><td><strong>${t.pts}</strong></td></tr>
+        <tr>
+            <td>${i+1}</td>
+            <td><img src="${t.logo}" class="team-logo-small"> ${t.name}</td>
+            <td>${t.p}</td>
+            <td>${t.pts/3|0}</td> <td>${t.gf}</td>
+            <td>${t.ga}</td>
+            <td>${t.gf - t.ga}</td> <td><strong>${t.pts}</strong></td>
+        </tr>
     `).join('');
 
-    renderFixtures();
-    
-    // Admin Fixture List
+    // RENDER FIXTURES FOR ADMIN
     document.getElementById('admin-matches-list').innerHTML = state.matches.map((m, i) => {
         const h = state.teams.find(x => x.id === m.homeId), a = state.teams.find(x => x.id === m.awayId);
-        return `<div class="match-row"><span>Wk ${m.week}: ${h.name}</span><input type="number" class="score-input" value="${m.hS??''}" onchange="updateScore(${i},'hS',this.value)"> - <input type="number" class="score-input" value="${m.aS??''}" onchange="updateScore(${i},'aS',this.value)"><span>${a.name}</span></div>`;
+        return `<div class="match-row"><span>${h.name}</span> <input type="number" class="score-input" value="${m.hS??''}" onchange="updateScore(${i},'hS',this.value)"> - <input type="number" class="score-input" value="${m.aS??''}" onchange="updateScore(${i},'aS',this.value)"> <span>${a.name}</span></div>`;
     }).join('');
 
-    document.getElementById('admin-team-list').innerHTML = state.teams.map(t => `<div class="match-row"><span>${t.name}</span><button class="delete-btn" onclick="deleteTeam(${t.id})">Del</button></div>`).join('');
+    document.getElementById('admin-team-list').innerHTML = state.teams.map(t => `<div class="match-row"><span>${t.name}</span> <button class="delete-btn" onclick="deleteTeam(${t.id})">Del</button></div>`).join('');
+    
+    renderFixturesDisplay();
 }
 
-function populateWeekSelector() {
+function renderFixturesDisplay() {
     const weeks = [...new Set(state.matches.map(m => m.week))];
-    document.getElementById('week-selector').innerHTML = weeks.map(w => `<option value="${w}">Week ${w}</option>`).join('');
-}
+    const sel = document.getElementById('week-selector');
+    if(sel.options.length === 0) sel.innerHTML = weeks.map(w => `<option value="${w}">Week ${w}</option>`).join('');
 
-function renderFixtures() {
-    const w = parseInt(document.getElementById('week-selector').value) || 1;
+    const w = parseInt(sel.value) || 1;
     document.getElementById('match-list').innerHTML = state.matches.filter(m => m.week === w).map(m => {
         const h = state.teams.find(x => x.id === m.homeId), a = state.teams.find(x => x.id === m.awayId);
-        return `<div class="match-row"><span>${h.name}</span><strong>${m.hS??'-'} : ${m.aS??'-'}</strong><span>${a.name}</span></div>`;
+        return `<div class="match-row"><span>${h.name}</span> <strong>${m.hS??'-'} : ${m.aS??'-'}</strong> <span>${a.name}</span></div>`;
     }).join('');
 }
 
